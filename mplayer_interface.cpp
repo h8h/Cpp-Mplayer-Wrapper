@@ -5,6 +5,7 @@
 #include <boost/asio.hpp>
 #include <boost/process/mitigate.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 namespace b = boost::process;
 namespace bi = boost::process::initializers;
 namespace bis = boost::iostreams;
@@ -65,10 +66,13 @@ class mplayer_interface
     }
 
     void get_mpf_float() {
-      //avoid blocking, but it manipulate the stdout !bug!
+      //avoid blocking
+      boost::asio::deadline_timer t(io_service, boost::posix_time::milliseconds(100));
+      t.wait(); //wait till mplayer answered
       boost::asio::posix::stream_descriptor::bytes_readable command(true);
       mplayer_result->io_control(command);
       std::size_t bytes_readable = command.get();
+      bytes_readable = command.get();
       if(bytes_readable == 0) { return; }
       //read data from buffer
       boost::system::error_code error;
