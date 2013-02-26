@@ -4,7 +4,7 @@
 #include <string>
 #include <boost/asio.hpp>
 #include <boost/process/mitigate.hpp>
-#include <boost/asio/socket_base.hpp>
+#include <boost/asio/posix/stream_descriptor.hpp>
 namespace b = boost::process;
 namespace bi = boost::process::initializers;
 namespace bis = boost::iostreams;
@@ -18,7 +18,6 @@ class mplayer_interface
     mplayer_interface() {
       b::pipe p1 = b::create_pipe();
       b::pipe p2 = b::create_pipe(); //asio pipe only for posix, sry windows :)
-
       {
         bis::file_descriptor_source source1(p1.source, bis::close_handle);
         bis::file_descriptor_sink sink2(p2.sink, bis::close_handle);
@@ -42,7 +41,7 @@ class mplayer_interface
            bi::inherit_env(),
            bi::close_fd(p1.sink)
          );
-        }
+      }
       //STDIN
       bis::file_descriptor_sink sink1(p1.sink, bis::close_handle);
       mplayer_cmd = new bis::stream<bis::file_descriptor_sink>(sink1);
@@ -66,9 +65,8 @@ class mplayer_interface
     }
 
     void get_mpf_float() {
-      //avoid blocking, but manipulate the stdout !bug!
-      boost::asio::ip::tcp::socket socket(io_service);
-      boost::asio::socket_base::bytes_readable command(true);
+      //avoid blocking, but it manipulate the stdout !bug!
+      boost::asio::posix::stream_descriptor::bytes_readable command(true);
       mplayer_result->io_control(command);
       std::size_t bytes_readable = command.get();
       if(bytes_readable == 0) { return; }
