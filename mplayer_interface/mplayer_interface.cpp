@@ -42,39 +42,6 @@ mplayer_interface::~mplayer_interface()
 	delete mplayer_result;
 }
 
-void mplayer_interface::play(const std::string& song)
-{
-	*mplayer_cmd << "loadfile " << song << std::endl;
-}
-
-void mplayer_interface::stop()
-{
-	*mplayer_cmd << "quit" << std::endl;
-}
-
-void mplayer_interface::pause()
-{
-	*mplayer_cmd << "pause" << std::endl;
-}
-
-int mplayer_interface::get_audio_bitrate()
-{
-	*mplayer_cmd << "get_audio_bitrate" << std::endl;
-	return get_mpf_integer();
-}
-
-int mplayer_interface::get_percent_pos()
-{
-	*mplayer_cmd << "get_percent_pos" << std::endl;
-	return get_mpf_integer();
-}
-
-float mplayer_interface::get_time_pos()
-{
-	*mplayer_cmd << "get_time_pos" << std::endl;
-	return get_mpf_float();
-}
-
 std::string mplayer_interface::get_data_from_pipe()
 {
 	//avoid blocking
@@ -133,4 +100,37 @@ int mplayer_interface::get_mpf_integer()
 	{
 		return -1;
 	}
+}
+
+void mplayer_interface::play(const std::string& song)
+{
+	*instance.mplayer_cmd << "loadfile " << song << std::endl;
+}
+
+void mplayer_interface::stop()
+{
+	*instance.mplayer_cmd << "quit" << std::endl;
+}
+
+void mplayer_interface::pause()
+{
+	*instance.mplayer_cmd << "pause" << std::endl;
+}
+
+int mplayer_interface::get_audio_bitrate()
+{
+	*instance.mplayer_cmd << "get_audio_bitrate" << std::endl;
+	return instance.get_mpf_integer();
+}
+
+int mplayer_interface::get_percent_pos()
+{
+	*instance.mplayer_cmd << "get_percent_pos" << std::endl;
+	return instance.get_mpf_integer();
+}
+
+float mplayer_interface::get_time_pos()
+{
+	*instance.mplayer_cmd << "get_time_pos" << std::endl;
+	return instance.get_mpf_float();
 }
