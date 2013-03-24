@@ -1,5 +1,7 @@
 #include "mplayer_interface.hpp"
 
+mplayer_interface mplayer_interface::instance;
+
 mplayer_interface::mplayer_interface()
 {
 	b::pipe p1 = b::create_pipe();
