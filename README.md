@@ -11,7 +11,7 @@ g++ test.cpp -I. -lboost_system -lboost_iostreams -lboost_regex -g -o mplayer_wr
 ./mplayer_wrapper
 ```
 Following commands are available
-* play <file>
+* play \<file\>
 * bit - get audio bitrate
 * pos - get percent position of playing audio file
 * time - get the current position in the file in seconds
