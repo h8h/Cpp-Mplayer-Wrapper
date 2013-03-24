@@ -1,23 +1,6 @@
-#include <boost/process.hpp> // version 0.5
-#include <boost/iostreams/device/file_descriptor.hpp>
-#include <boost/iostreams/stream.hpp>
-#include <string>
-#include <boost/asio.hpp>
-#include <boost/process/mitigate.hpp>
-#include <boost/asio/posix/stream_descriptor.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/regex.hpp>
-namespace b = boost::process;
-namespace bi = boost::process::initializers;
-namespace bis = boost::iostreams;
-class mplayer_interface
-{
-  private:
-    bis::stream<bis::file_descriptor_sink>* mplayer_cmd;
-    boost::process::pipe_end* mplayer_result;
-    boost::asio::io_service io_service;
-  public:
-    mplayer_interface() {
+#include "mplayer_interface.hpp"
+
+   mplayer_interface::mplayer_interface() {
       b::pipe p1 = b::create_pipe();
       b::pipe p2 = b::create_pipe(); //asio pipe only for posix, sry windows :)
       {
@@ -52,34 +35,39 @@ class mplayer_interface
       mplayer_result = new boost::process::pipe_end(io_service, p2.source);
     }
 
-    void play(const std::string& song) {
+    mplayer_interface::~mplayer_interface() {
+      delete mplayer_cmd;
+      delete mplayer_result;
+    }
+
+    void mplayer_interface::play(const std::string& song) {
       *mplayer_cmd << "loadfile " << song << std::endl;
     }
 
-    void stop() {
+    void mplayer_interface::stop() {
       *mplayer_cmd << "quit" << std::endl;
     }
 
-    int get_audio_bitrate() {
+    int mplayer_interface::get_audio_bitrate() {
       *mplayer_cmd << "get_audio_bitrate" << std::endl;
       return get_mpf_integer();
     }
 
-    int get_percent_pos() {
+    int mplayer_interface::get_percent_pos() {
       *mplayer_cmd << "get_percent_pos" << std::endl;
       return get_mpf_integer();
     }
 
-    float get_time_pos() {
+    float mplayer_interface::get_time_pos() {
       *mplayer_cmd << "get_time_pos" << std::endl;
       return get_mpf_float();
     }
 
-    void pause() {
+    void mplayer_interface::pause() {
       *mplayer_cmd << "pause" << std::endl;
     }
 
-    std::string get_data_from_pipe() {
+    std::string mplayer_interface::get_data_from_pipe() {
       //avoid blocking
       boost::asio::deadline_timer t(io_service, boost::posix_time::milliseconds(100));
       t.wait(); //wait till mplayer answered
@@ -100,7 +88,7 @@ class mplayer_interface
       return s;
     }
 
-    float get_mpf_float() {
+    float mplayer_interface::get_mpf_float() {
       std::string s = get_data_from_pipe();
       //search for digits 123.456
       boost::regex regex("\\d+\\.\\d+");
@@ -116,7 +104,7 @@ class mplayer_interface
       }
     }
 
-    int get_mpf_integer() {
+    int mplayer_interface::get_mpf_integer() {
       std::string s = get_data_from_pipe();
       //search for digits 123456
       boost::regex regex("\\d+");
@@ -131,33 +119,3 @@ class mplayer_interface
         return -1;
       }
     }
-
-};
-
-//TESTAREA
-int main( int argc, char *argv[] )
-{
-    mplayer_interface mplayer;
-    std::string userI;
-    while ( strcmp( userI.c_str(), "exit") != 0 )
-    {
-        std::cout<<'>';
-        std::cin>>userI;
-        if(userI.compare("play") == 0) {
-          std::string s;
-          std::cin>>s;
-          mplayer.play(s);
-        }
-        if(userI.compare("bit") == 0) {
-          std::cout << "Bitrate: " << mplayer.get_audio_bitrate() << " kbs" << std::endl;
-        }
-        if(userI.compare("pos") == 0) {
-          std::cout << "Percent: " << mplayer.get_percent_pos() << "%" << std::endl;
-        }
-        if(userI.compare("time") == 0) {
-          std::cout << "Current Timeposition: " << mplayer.get_time_pos() << "sec." << std::endl;
-        }
-    }
-    mplayer.stop();
-    return(0);
-}
