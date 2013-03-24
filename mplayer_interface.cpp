@@ -56,19 +56,27 @@ class mplayer_interface
       *mplayer_cmd << "loadfile " << song << std::endl;
     }
 
-    void get_audio_bitrate() {
+    void stop() {
+      *mplayer_cmd << "quit" << std::endl;
+    }
+
+    int get_audio_bitrate() {
       *mplayer_cmd << "get_audio_bitrate" << std::endl;
-      get_mpf_integer();
+      return get_mpf_integer();
     }
 
-    void get_percent_pos() {
+    int get_percent_pos() {
       *mplayer_cmd << "get_percent_pos" << std::endl;
-      get_mpf_integer();
+      return get_mpf_integer();
     }
 
-    void get_time_pos() {
+    float get_time_pos() {
       *mplayer_cmd << "get_time_pos" << std::endl;
-      get_mpf_float();
+      return get_mpf_float();
+    }
+
+    void pause() {
+      *mplayer_cmd << "pause" << std::endl;
     }
 
     std::string get_data_from_pipe() {
@@ -85,6 +93,7 @@ class mplayer_interface
       boost::asio::streambuf buffer;
       boost::asio::read_until( *mplayer_result,buffer,"\n", error);
       io_service.run();
+      //turn istream into string
       std::string s;
       std::istream str(&buffer);
       std::getline(str, s);
@@ -93,6 +102,7 @@ class mplayer_interface
 
     float get_mpf_float() {
       std::string s = get_data_from_pipe();
+      //search for digits 123.456
       boost::regex regex("\\d+\\.\\d+");
       boost::smatch result;
       if(!boost::regex_search(s, result, regex)) { return -1; }
@@ -106,9 +116,9 @@ class mplayer_interface
       }
     }
 
-
     int get_mpf_integer() {
       std::string s = get_data_from_pipe();
+      //search for digits 123456
       boost::regex regex("\\d+");
       boost::smatch result;
       if(!boost::regex_search(s, result, regex)) { return -1; }
@@ -122,19 +132,7 @@ class mplayer_interface
       }
     }
 
-    /* void get_mpf_integer() { */
-    /*   std::string = get_data_from_pipe(); */
-    /*   boost::regex regex("\\d+"); */
-    /*   boost::smatch what; */
-    /*   bool search_result = boost::regex_searcH(s, what, regex); */
-    /*   std::cout << what[0] << std::endl; */
-    /* } */
-
-    void pause() {
-      *mplayer_cmd << "pause" << std::endl;
-    }
 };
-
 
 //TESTAREA
 int main( int argc, char *argv[] )
@@ -151,14 +149,15 @@ int main( int argc, char *argv[] )
           mplayer.play(s);
         }
         if(userI.compare("bit") == 0) {
-          mplayer.get_audio_bitrate();
+          std::cout << "Bitrate: " << mplayer.get_audio_bitrate() << " kbs" << std::endl;
         }
         if(userI.compare("pos") == 0) {
-          mplayer.get_percent_pos();
+          std::cout << "Percent: " << mplayer.get_percent_pos() << "%" << std::endl;
         }
         if(userI.compare("time") == 0) {
-          mplayer.get_time_pos();
+          std::cout << "Current Timeposition: " << mplayer.get_time_pos() << "sec." << std::endl;
         }
     }
+    mplayer.stop();
     return(0);
 }
