@@ -20,6 +20,7 @@ class mplayer_interface
     boost::asio::io_service io_service;
   public:
     mplayer_interface();
+    ~mplayer_interface();
 
     //commands
     void play(const std::string& song);
@@ -29,6 +30,7 @@ class mplayer_interface
     float get_time_pos();
     void pause();
 
+    //conversion
     std::string get_data_from_pipe();
     float get_mpf_float();
     int get_mpf_integer();
