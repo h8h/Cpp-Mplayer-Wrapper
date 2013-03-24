@@ -6,6 +6,7 @@
 #include <boost/process/mitigate.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/regex.hpp>
 namespace b = boost::process;
 namespace bi = boost::process::initializers;
 namespace bis = boost::iostreams;
@@ -57,15 +58,20 @@ class mplayer_interface
 
     void get_audio_bitrate() {
       *mplayer_cmd << "get_audio_bitrate" << std::endl;
-       get_mpf_float();
+      get_mpf_integer();
     }
 
     void get_percent_pos() {
       *mplayer_cmd << "get_percent_pos" << std::endl;
+      get_mpf_integer();
+    }
+
+    void get_time_pos() {
+      *mplayer_cmd << "get_time_pos" << std::endl;
       get_mpf_float();
     }
 
-    void get_mpf_float() {
+    std::string get_data_from_pipe() {
       //avoid blocking
       boost::asio::deadline_timer t(io_service, boost::posix_time::milliseconds(100));
       t.wait(); //wait till mplayer answered
@@ -73,18 +79,56 @@ class mplayer_interface
       mplayer_result->io_control(command);
       std::size_t bytes_readable = command.get();
       bytes_readable = command.get();
-      if(bytes_readable == 0) { return; }
+      if(bytes_readable == 0) { return ""; }
       //read data from buffer
       boost::system::error_code error;
       boost::asio::streambuf buffer;
       boost::asio::read_until( *mplayer_result,buffer,"\n", error);
       io_service.run();
-      std::istream str(&buffer);
       std::string s;
+      std::istream str(&buffer);
       std::getline(str, s);
-      //todo: make str to float
-      std::cout << "read: "<< s << std::endl;
+      return s;
     }
+
+    float get_mpf_float() {
+      std::string s = get_data_from_pipe();
+      boost::regex regex("\\d+\\.\\d+");
+      boost::smatch result;
+      if(!boost::regex_search(s, result, regex)) { return -1; }
+      try
+      {
+        return boost::lexical_cast<float>(result[0]);
+      }
+      catch(boost::bad_lexical_cast &)
+      {
+        return -1;
+      }
+    }
+
+
+    int get_mpf_integer() {
+      std::string s = get_data_from_pipe();
+      boost::regex regex("\\d+");
+      boost::smatch result;
+      if(!boost::regex_search(s, result, regex)) { return -1; }
+      try
+      {
+        return boost::lexical_cast<int>(result[0]);
+      }
+      catch(boost::bad_lexical_cast &)
+      {
+        return -1;
+      }
+    }
+
+    /* void get_mpf_integer() { */
+    /*   std::string = get_data_from_pipe(); */
+    /*   boost::regex regex("\\d+"); */
+    /*   boost::smatch what; */
+    /*   bool search_result = boost::regex_searcH(s, what, regex); */
+    /*   std::cout << what[0] << std::endl; */
+    /* } */
 
     void pause() {
       *mplayer_cmd << "pause" << std::endl;
@@ -112,7 +156,9 @@ int main( int argc, char *argv[] )
         if(userI.compare("pos") == 0) {
           mplayer.get_percent_pos();
         }
-
+        if(userI.compare("time") == 0) {
+          mplayer.get_time_pos();
+        }
     }
     return(0);
 }
