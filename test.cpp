@@ -4,7 +4,7 @@
 int main( int argc, char *argv[] )
 {
     std::string userI;
-    while(strcmp(userI.c_str(), "exit") != 0)
+    while(strcmp(userI.c_str(), "exit") != 0 && strcmp(userI.c_str(),"quit") != 0)
     {
         std::cout << '>';
         std::cin  >> userI;
@@ -22,8 +22,16 @@ int main( int argc, char *argv[] )
         if(userI.compare("time") == 0) {
           std::cout << "Current Timeposition: " << mplayer_interface::get_time_pos() << "sec" << std::endl;
         }
+        if(userI.compare("next") == 0) {
+          mplayer_interface::next();
+          std::cout << "Next song" << std::endl;
+        }
+        if(userI.compare("pause") == 0) {
+          mplayer_interface::pause();
+          std::cout << "pause" << std::endl;
+        }
     }
-    
-    mplayer_interface::stop();
+
+    mplayer_interface::quit();
     return 0;
 }

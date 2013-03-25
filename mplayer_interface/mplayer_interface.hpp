@@ -16,25 +16,26 @@ class mplayer_interface
 {
 protected:
 	static mplayer_interface instance;
-	
+
 	bis::stream<bis::file_descriptor_sink>* mplayer_cmd;
 	boost::process::pipe_end* mplayer_result;
 	boost::asio::io_service io_service;
-	
+
 	mplayer_interface();
 	~mplayer_interface();
-	
+
 	// internal functions
-	std::string get_data_from_pipe();
-	// TODO: Find descriptive function names
-	float get_mpf_float();
-	int get_mpf_integer();
-	
+	std::string read_from_pipe();
+	float pipe_convert_to_float();
+	int pipe_convert_to_int();
+
 public:
 	// external interface
 	static void play(const std::string& song);
+  static void quit();
 	static void stop();
 	static void pause();
+  static void next();
 	static int get_audio_bitrate();
 	static int get_percent_pos();
 	static float get_time_pos();
