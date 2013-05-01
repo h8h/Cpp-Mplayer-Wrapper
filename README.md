@@ -19,4 +19,6 @@ Following commands are available
 * next - plays next song
 * exit or quit - terminate programm
 
-C++ MPlayer Wrapper is under heavy development. It may not function as you expect.
+###License
+GPL3 license (see the LICENSE file (folder mplayer_interface)).
+Feel free to use it and even contribute bug fixes or enhancements if you want. Enjoy!
